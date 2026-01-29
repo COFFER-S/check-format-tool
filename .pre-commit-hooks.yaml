@@ -1,0 +1,20 @@
+- id: code-style
+  name: Code style
+  entry: check-format
+  language: python
+  files: \.(c|h|cpp|hpp)$
+  require_serial: true
+- id: branch-name
+  name: Branch name
+  entry: check-format
+  language: python
+  always_run: true
+  require_serial: true
+  exclude: '.*'
+- id: commit-message
+  name: Commit message
+  entry: check-format
+  language: python
+  always_run: true
+  require_serial: true
+  exclude: '.*'
