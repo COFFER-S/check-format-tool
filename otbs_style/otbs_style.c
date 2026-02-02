@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Espressif Systems (Shanghai) CO., LTD
+ * SPDX-License-Identifier: LicenseRef-Espressif-Modified-MIT
+ *
+ * See LICENSE file for details.
+ */
+
 #include <string.h>
 #include "i2c_bus.h"
 #include "board.h"
@@ -51,11 +58,11 @@
     }                                        \
 } while (0)
 
-#define AUDIO_SAFE_FREE_2(ptr, free_fn)  {  \
-    if (ptr && free_fn != NULL) {           \
-        free_fn(ptr);                       \
-        ptr = NULL;                         \
-    }                                       \
+#define AUDIO_SAFE_FREE_SEC(ptr, free_fn)  {  \
+    if (ptr && free_fn != NULL) {             \
+        free_fn(ptr);                         \
+        ptr = NULL;                           \
+    }                                         \
 }
 
 #define TEST_CFG_DEFAULT_()  {                                  \
@@ -86,49 +93,33 @@ uint32_t array_test[] = {
 uint64_t array_2_test[][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
 
 typedef struct {
-    /* new line */
+    /* comment line */
     pcnt_chan_config_t           channel_config;  /*!< Basic PCNT channel configuration */
     // Channel edge and level actions
-    /* new line */
+    /* comment line */
     pcnt_channel_edge_action_t   pos_act;         /*!< Action on positive edge */
     pcnt_channel_edge_action_t   neg_act;         /*!< Action on negative edge */
     pcnt_channel_level_action_t  high_act;        /*!< Action when signal level is high */
     pcnt_channel_level_action_t  low_act;         /*!< Action when signal level is low */
 
-    /* new line */
+    /* comment line */
     pcnt_channel_level_action_t  middle_act;  /*!< Action when signal level is middle */
-} periph_pcnt_channel_config_t_2;
+} periph_pcnt_channel_config_t;
 
 typedef struct {
     // Channel role selection
     char *role;  /*!< Channel role: "tx" for transmitter or "rx" for receiver */
 
-    const uint32_t *i2c_name1;  /*!< I2C bus name */
-    uint32_t        i2c_freq1;  /*!< I2C frequency */
-    gpio_num_t      reset_io1;  /*!< GPIO io for reset signal */
-    gpio_num_t      pwdn_io1;   /*!< GPIO io for power down signal */
+    const uint32_t *i2c_name;  /*!< I2C bus name */
+    uint32_t        i2c_freq;  /*!< I2C frequency */
+    gpio_num_t      reset_io;  /*!< GPIO io for reset signal */
+    gpio_num_t      pwdn_io;   /*!< GPIO io for power down signal */
 
-    const uint32_t     *i2c_name2;  /*!< I2C bus name */
-    uint32_t            i2c_freq2;  /*!< I2C frequency */
-    esp_gmf_gpio_num_t  reset_io2;  /*!< GPIO io for reset signal */
-    gpio_num_t          pwdn_io2;   /*!< GPIO io for power down signal */
-
-    uint32_t            i2c_freq3;  /*!< I2C frequency */
-    esp_gmf_gpio_num_t *i2c_name3;  /*!< I2C bus name */
-    esp_adf_gpio_num_t  reset_io3;  /*!< GPIO io for reset signal */
-    gpio_num_t          pwdn_io3;   /*!< GPIO io for power down signal */
-
-    const char *name1;      /*!< Device name */
-    const char *type1;      /*!< Device type */
-    const char *dev_path1;  /*!< Device path */
-    const char *bus_type1;  /*!< Bus type (e.g., "csi", "spi", "dvp", "usb_uvc" etc.) */
-    const char *sub_type1;  /*!< Bus type (e.g., "csi", "spi", "dvp", "usb_uvc" etc.) */
-
-    const char  name2;      /*!< Device name */
-    const char  type2;      /*!< Device type */
-    const char  dev_path2;  /*!< Device path */
-    const char  bus_type2;  /*!< Bus type (e.g., "csi", "spi", "dvp", "usb_uvc" etc.) */
-    const char  sub_type2;  /*!< Bus type (e.g., "csi", "spi", "dvp", "usb_uvc" etc.) */
+    const char *name;      /*!< Device name */
+    const char *type;      /*!< Device type */
+    const char *dev_path;  /*!< Device path */
+    const char *bus_type;  /*!< Bus type (e.g., "csi", "spi", "dvp", "usb_uvc" etc.) */
+    const char *sub_type;  /*!< Bus type (e.g., "csi", "spi", "dvp", "usb_uvc" etc.) */
 
     // Common channel configuration (shared by TX and RX)
     gpio_num_t          gpio_num;           /*!< GPIO number used by the channel */
@@ -136,17 +127,17 @@ typedef struct {
     uint32_t            resolution_hz;      /*!< Clock resolution in Hertz */
     int                 intr_priority;      /*!< Interrupt priority level */
     size_t              mem_block_symbols;  /*!< Memory block size in symbols */
-} periph_rmt_config3_t;
+} periph_rmt_config_t;
 
+static uint32_t cur_pts;
+static uint32_t duration;
 static uint32_t stream_start_pts[ESP_EXTRACTOR_STREAM_TYPE_MAX];
 static uint32_t stream_pts[ESP_EXTRACTOR_STREAM_TYPE_MAX];
 static int stream_frame_count[ESP_EXTRACTOR_STREAM_TYPE_MAX];
-static uint32_t cur_pts;
-static uint32_t duration;
 
-bool have_av = false;
 static int reach_eos = 0;
 static int read_delay = 0;
+static bool have_av = false;
 static bool allow_dump = false;
 static bool show_verbose = false;
 static bool show_checksum = false;
@@ -173,7 +164,7 @@ static const esp_ae_drc_curve_point esp_gmf_default_drc_points[] = {
     {.x = -100.0f, .y = -100.0f},
 };
 
-static const esp_ae_drc_curve_point esp_gmf_default_drc_points_2[] = {
+static const esp_ae_drc_curve_point esp_gmf_default_drc_points_sec[] = {
     {
         .x = 0.0f,
         .y = -20.0f,
@@ -204,6 +195,7 @@ static inline esp_gmf_err_t dupl_esp_gmf_audio_enc_cfg(esp_audio_enc_config_t *c
 
 void test_extremely_long_function_call(void)
 {
+    int ret = ESP_OK;
     if (test_name_with_very_long_parameter == very_long_value
         || another_test_name_with_very_long_parameter == very_long_value
         || third_test_name_with_very_long_parameter == very_long_value
@@ -211,51 +203,51 @@ void test_extremely_long_function_call(void)
         return;
     }
 
-    if (a == a
-        || a == b
-        || a == c
-        || a == d
-        || a == e
-        || a == f
-        || a == g
-        || a == h
-        || a == i
-        || a == j
-        || a == k
-        || a == l
+    if (ret == ESP_ERR_INVALID_ARG
+        || ret == ESP_ERR_INVALID_STATE
+        || ret == ESP_ERR_INVALID_SIZE
+        || ret == ESP_ERR_INVALID_VALUE
+        || ret == ESP_ERR_INVALID_CRC
+        || ret == ESP_ERR_INVALID_CHECKSUM
+        || ret == ESP_ERR_INVALID_LENGTH
+        || ret == ESP_ERR_INVALID_FORMAT
+        || ret == ESP_ERR_INVALID_DATA
+        || ret == ESP_ERR_INVALID_INDEX
+        || ret == ESP_ERR_INVALID_POINTER
+        || ret == ESP_ERR_INVALID_TIMEOUT
     ) {
         return;
     }
 
-    if (b == a
-        || b == b
-        || b == c
-        || b == d
-        || (c != e && c != f)) {
+    if (ret == ESP_ERR_INVALID_ARG
+        || ret == ESP_ERR_INVALID_STATE
+        || ret == ESP_ERR_INVALID_SIZE
+        || ret == ESP_ERR_INVALID_VALUE
+        || (ret != ESP_ERR_INVALID_CRC && ret != ESP_ERR_INVALID_CHECKSUM)) {
         return;
     }
 
-    if ((c != a && c != b && c != c)
-        || c == d
-        || c == e) {
+    if ((ret != ESP_ERR_INVALID_TIMEOUT && ret != ESP_ERR_INVALID_POINTER && ret != ESP_ERR_INVALID_INDEX)
+        || ret == ESP_ERR_INVALID_DATA
+        || ret == ESP_ERR_INVALID_FORMAT) {
         return;
     }
 
-    if ((d != a || d != b || d != c)
-        && d == d
-        && d == e) {
+    if ((ret != ESP_ERR_INVALID_ARG || ret != ESP_ERR_INVALID_STATE || ret != ESP_ERR_INVALID_SIZE)
+        && ret == ESP_ERR_INVALID_VALUE
+        && ret == ESP_ERR_INVALID_CRC) {
         return;
     }
 
-    if ((e != a || e != b || e != c)
-        || e == d
-        || e == e) {
+    if ((ret != ESP_ERR_INVALID_ARG || ret != ESP_ERR_INVALID_STATE || ret != ESP_ERR_INVALID_SIZE)
+        || ret == ESP_ERR_INVALID_VALUE
+        || ret == ESP_ERR_INVALID_CRC) {
         return;
     }
 
-    if ((f != a && f != b && f != c)
-        && f == d
-        && (f == e || f == f)) {
+    if ((ret != ESP_ERR_INVALID_ARG && ret != ESP_ERR_INVALID_STATE && ret != ESP_ERR_INVALID_SIZE)
+        && ret == ESP_ERR_INVALID_VALUE
+        && (ret == ESP_ERR_INVALID_CRC || ret == ESP_ERR_INVALID_CHECKSUM)) {
         return;
     }
 
@@ -328,23 +320,23 @@ esp_gmf_err_t esp_gmf_io_file_init(file_io_cfg_t *config, esp_gmf_io_handle_t *i
             .io_size = config->io_cfg.buffer_cfg.io_size,
             .buffer_size = config->io_cfg.buffer_cfg.buffer_size,
         },
-        .buffer_cfg_2 = {
+        .dma_cfg = {
             .io_size = config->io_cfg.buffer_cfg.io_size,
             .buffer_size = config->io_cfg.buffer_cfg.buffer_size,
         },
-        .buffer_cfg_3 = {.a = config->a, .b = config->b},
-        .buffer_cfg_4 = {
-            .a = config->a,
-            .b = config->b,
+        .adc_cfg = {.ch = config->ch, .en = config->en},
+        .i2s_cfg = {
+            .num = config->num,
+            .size = config->size,
         },
-        .buffer_cfg_5 = {
-            .a = config->a,
-            .b = config->b,
+        .spi_cfg = {
+            .port = config->port,
+            .clk = config->clk,
         },
-        .buffer_cfg_6 = {
-            .a = config->a,
-            .b = config->b,
-            .c = config->c,
+        .led_cfg = {
+            .ch = config->ch,
+            .rmt = config->rmt,
+            .num = config->num,
         },
     };
     ret = esp_gmf_io_init(obj, &io_cfg);
@@ -366,13 +358,14 @@ _file_fail:
 
 int function(int *h)
 {
-    int a, b, c, ci;
-    ci = a * 3 * c;
-    ci = ci * *h;
+    int a, b, c, d;
+    d = a * 3 * c;
+    d = d * *h;
     int a[] = {0};
     int a[] = {1, 2, 3};
-    ESP_CHECK({free(aa);});
-    ADUIO_MEM_CHECK(TAG, pipe, free(aa););
-    ADUIO_MEM_CHECK(TAG, pipe, {free(aa); return AA;});
+    ESP_CHECK({free(point);});
+    ADUIO_MEM_CHECK(TAG, pipe, free(point););
+    ADUIO_MEM_CHECK(TAG, pipe, {free(point); return ESP_FAIL;});
     ESP_LOGI(TAG, "test (%" PRIu8 "%)", mute);
+    return ESP_OK;
 }
