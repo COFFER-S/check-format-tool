@@ -1,6 +1,6 @@
 # check-format pre-commit hook
 
-这是一个用于 [pre-commit](https://pre-commit.com/) 框架的 hook，用于在提交代码前自动检查代码格式。
+这是一个用于在提交代码时自动检查代码格式的 [pre-commit](https://pre-commit.com/) hook。
 
 ## 支持系统
 
@@ -14,6 +14,7 @@
 
 1. **分支名称格式** (`branch-name`)：检查分支名称是否符合规范
 2. **代码风格** (`code-style`)：检查或格式化代码风格，确保代码符合项目规范
+3. **提交信息** (``commit-message``)
 
 ---
 
@@ -32,7 +33,7 @@ pip install pre-commit
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.0
+    rev: v1.0.1
     hooks: 
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -47,7 +48,7 @@ repos:
 
 ```yaml
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.0
+    rev: v1.0.1
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -98,6 +99,19 @@ git commit -m "feat(gmf): Add coze example" --no-verify
 ```
 
 > **⚠️ 警告**：跳过 hook 可能导致不符合规范的代码被提交，请谨慎使用。
+
+### 2.5. 参数
+
+id: code-style 的 args
+^^^^^^^^^^^^^^^^^^^^^^
+
+- ``--local``：仅在本地环境运行，不存在简写形式
+- ``--ci``：仅在 CI 环境运行，不存在简写形式
+- ``-v``：打印详细信息，等同于 ``--verbose``
+- ``-f``：允许直接格式化已改动的代码段（不询问），等同于 ``--format``
+- ``-F``：格式化整个文件，等同于 ``--full``
+- ``-vf``：允许直接格式化已改动的代码段（不询问），并打印详细信息，等同于 ``--verbose --format``
+- ``-vFf``：允许直接格式化整个文件（不询问），并打印详细信息，等同于 ``--verbose --full --format``
 
 ---
 
@@ -311,6 +325,11 @@ uint32_t array[] = {
  * @param[in]  path    注解与参数之间需至少两个空格
  * @param[in]  enable  紧邻的参数/注解均需要对齐
  *
+ * @note  注解与'@note'之间需两个空格
+ *        note 下方紧邻部分不进行格式化，用户可以自由发挥
+ *        可画图，可写代码，可写表格等
+ *        在 note 块下方需要添加一个空行，表示 note 块结束
+ *
  * @return
  *       - ESP_CAPTURE_ERR_OK  'return'部分一定也是'Key-Value'的格式，Key必须使用下划线连接
  *       - Others               紧邻的注解需要对齐
@@ -408,7 +427,7 @@ uint32_t array[] = {
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.0
+    rev: v1.0.1
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']  # 只在本地运行
@@ -462,11 +481,11 @@ Check format........................................................Failed
 ## 8. 相关文档
 
 - [pre-commit 官方文档](https://pre-commit.com/)
-- [代码风格规范](./otbs_style)
+- [代码风格参考](./otbs_style)
 
 ---
 
-## 9. 贡献
+## 9. Issue
 
 如果发现问题或有改进建议，请在项目中创建 issue。
 
