@@ -20,6 +20,8 @@
 
 ## 2. 快速上手
 
+![演示](./docs/demo.gif)
+
 ### 2.1. 安装 pre-commit
 
 ```bash
@@ -33,7 +35,7 @@ pip install pre-commit
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.0.1
+    rev: v1.1
     hooks: 
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -48,7 +50,7 @@ repos:
 
 ```yaml
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.0.1
+    rev: v1.1
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -112,6 +114,13 @@ id: code-style 的 args
 - ``-F``：格式化整个文件，等同于 ``--full``
 - ``-vf``：允许直接格式化已改动的代码段（不询问），并打印详细信息，等同于 ``--verbose --format``
 - ``-vFf``：允许直接格式化整个文件（不询问），并打印详细信息，等同于 ``--verbose --full --format``
+
+### 2.6. 下载可执行文件本地使用
+```bash
+wget https://raw.githubusercontent.com/COFFER-S/check-format-tool/main/linux/check_commit_format
+chmod +x check_commit_format
+./check_commit_format --help
+```
 
 ---
 
@@ -427,7 +436,7 @@ uint32_t array[] = {
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.0.1
+    rev: v1.1
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']  # 只在本地运行
