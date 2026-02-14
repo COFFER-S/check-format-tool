@@ -35,7 +35,7 @@ pip install pre-commit
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.1
+    rev: v1.1.1
     hooks: 
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -50,7 +50,7 @@ repos:
 
 ```yaml
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.1
+    rev: v1.1.1
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -436,7 +436,7 @@ uint32_t array[] = {
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.1
+    rev: v1.1.1
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']  # 只在本地运行
