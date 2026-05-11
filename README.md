@@ -24,18 +24,22 @@
 
 ### 2.1. 安装 pre-commit
 
+请安装 pre-commit：
+
 ```bash
 pip install pre-commit
+# 或升级到最新版本
+pip install -U pre-commit
 ```
 
 ### 2.2. 配置 pre-commit
 
-在项目根目录创建 `.pre-commit-config.yaml` 文件，添加以下配置：
+在项目根目录创建 `.pre-commit-config.yaml` 文件：
 
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.1.3
+    rev: v1.1.4
     hooks: 
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -50,7 +54,7 @@ repos:
 
 ```yaml
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.1.3
+    rev: v1.1.4
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']
@@ -246,10 +250,7 @@ feat(audio_board): Add esp32_s3_korvo2_v3 board configurations. (末尾不能有
 
 #### 3.3.2. 配置文件
 
-工具使用两个配置文件来控制代码格式化：
-
-1. **`.clang-format`**：用于函数定义外的 include、全局变量、结构体、枚举等
-2. **`.clang-format-function`**：用于函数定义
+工具使用**单一配置文件** `.clang-format` 控制代码格式化；函数体内的对齐等由 `.clang-format` 中的 **FunctionBody** 子项配置，无需单独的 `.clang-format-function` 文件。
 
 #### 3.3.3. 新增配置选项
 
@@ -351,10 +352,7 @@ uint32_t array[] = {
 
 ### 4.1. 配置文件搜索优先级
 
-工具使用两个配置文件来控制代码格式化：
-
-- **`.clang-format`**：用于函数定义外的 include、全局变量、结构体、枚举等
-- **`.clang-format-function`**：用于函数定义
+工具使用**单一配置文件** `.clang-format`；函数体样式由其中的 **FunctionBody** 子项控制。
 
 配置文件搜索优先级（从高到低）：
 
@@ -380,7 +378,6 @@ uint32_t array[] = {
 - 如果在前三个位置找到配置文件，会优先使用外部文件
 - 只有在外部找不到时，才会使用打包的默认配置文件
 - 如果使用了打包的配置文件，会显示警告：`Using default configuration files from package`
-- 两个配置文件（`.clang-format` 和 `.clang-format-function`）分别按上述顺序搜索，可能来自不同位置
 
 ### 4.2. 文件类型过滤
 
@@ -436,7 +433,7 @@ uint32_t array[] = {
 ```yaml
 repos:
   - repo: https://github.com/COFFER-S/check-format-tool
-    rev: v1.1.3
+    rev: v1.1.4
     hooks:
       - id: code-style
         args: ['--local', '-vf', 'code-style']  # 只在本地运行
